@@ -1,0 +1,2902 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Survival V2.1</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#79c96b;
+  font-family:Arial,sans-serif;
+  touch-action:none;
+}
+
+#game{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+/* UI */
+
+#ui{
+  position:fixed;
+  top:7px;
+  left:7px;
+  z-index:10;
+  pointer-events:none;
+}
+
+#stats{
+  width:135px;
+  padding:7px 9px;
+  border-radius:14px;
+  background:rgba(255,255,255,.88);
+  color:#444;
+  box-shadow:0 3px 10px rgba(0,0,0,.16);
+  font-size:10px;
+  font-weight:bold;
+}
+
+.bar{
+  width:115px;
+  height:7px;
+  margin:2px 0 4px;
+  background:#ddd;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  border-radius:10px;
+}
+
+#hp{
+  background:#ff7777;
+}
+
+#food{
+  background:#ffc85c;
+}
+
+#xp{
+  background:#70b8ff;
+}
+
+#inventoryBtn{
+  position:fixed;
+  top:8px;
+  right:8px;
+  z-index:20;
+  width:44px;
+  height:44px;
+  border:1px solid white;
+  border-radius:50%;
+  background:rgba(255,255,255,.82);
+  color:#555;
+  font-size:12px;
+  font-weight:bold;
+  box-shadow:0 3px 9px rgba(0,0,0,.18);
+}
+
+/* MESSAGE */
+
+#message{
+  position:fixed;
+  top:42%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  padding:8px 14px;
+  border-radius:15px;
+  background:rgba(255,255,255,.94);
+  color:#444;
+  font-size:12px;
+  font-weight:bold;
+  box-shadow:0 4px 15px rgba(0,0,0,.18);
+  display:none;
+  z-index:50;
+  pointer-events:none;
+  white-space:nowrap;
+}
+
+/* CONTROLS */
+
+#controls{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  z-index:15;
+  pointer-events:none;
+}
+
+.pad{
+  width:120px;
+  height:120px;
+  position:relative;
+  pointer-events:auto;
+}
+
+.btn{
+  position:absolute;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.9);
+  background:rgba(255,255,255,.68);
+  color:#555;
+  font-size:15px;
+  font-weight:bold;
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+  user-select:none;
+}
+
+.up{
+  left:40px;
+  top:0;
+}
+
+.down{
+  left:40px;
+  bottom:0;
+}
+
+.left{
+  left:0;
+  top:40px;
+}
+
+.right{
+  right:0;
+  top:40px;
+}
+
+.actions{
+  display:flex;
+  gap:6px;
+  align-items:flex-end;
+  pointer-events:auto;
+}
+
+.action{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.9);
+  background:rgba(255,255,255,.74);
+  color:#555;
+  font-size:9px;
+  font-weight:bold;
+  box-shadow:0 3px 8px rgba(0,0,0,.15);
+}
+
+/* PANELS */
+
+.panel{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(350px,92vw);
+  max-height:82vh;
+  background:rgba(255,255,255,.97);
+  border-radius:20px;
+  padding:13px;
+  z-index:100;
+  display:none;
+  box-shadow:0 10px 40px rgba(0,0,0,.3);
+  overflow:auto;
+  color:#444;
+}
+
+.panel h3{
+  margin:0 0 10px;
+  text-align:center;
+  font-size:17px;
+}
+
+.close{
+  float:right;
+  border:0;
+  background:#eee;
+  border-radius:50%;
+  width:28px;
+  height:28px;
+  color:#555;
+  font-weight:bold;
+}
+
+/* INVENTORY */
+
+.itemGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+}
+
+.item{
+  min-height:65px;
+  border-radius:13px;
+  background:#f2f2f2;
+  padding:8px;
+  text-align:center;
+  color:#555;
+  font-size:11px;
+  border:1px solid #ddd;
+}
+
+.itemIcon{
+  font-size:12px;
+  display:block;
+  margin-bottom:5px;
+  font-weight:bold;
+}
+
+.itemCount{
+  font-size:10px;
+  color:#777;
+}
+
+/* CRAFT */
+
+.craftBtn{
+  width:100%;
+  border:0;
+  background:#f1f1f1;
+  border-radius:13px;
+  padding:10px;
+  margin-bottom:7px;
+  text-align:left;
+  color:#444;
+  font-weight:bold;
+}
+
+.craftSmall{
+  display:block;
+  margin-top:3px;
+  font-size:10px;
+  font-weight:normal;
+  color:#777;
+}
+
+/* BUILD */
+
+#buildPanel{
+  position:fixed;
+  left:50%;
+  bottom:140px;
+  transform:translateX(-50%);
+  display:none;
+  z-index:30;
+  background:rgba(255,255,255,.9);
+  padding:6px;
+  border-radius:15px;
+  box-shadow:0 3px 12px rgba(0,0,0,.18);
+  white-space:nowrap;
+}
+
+.buildBtn{
+  border:0;
+  border-radius:10px;
+  background:white;
+  padding:7px 10px;
+  margin:2px;
+  font-size:10px;
+  color:#555;
+}
+
+.hint{
+  text-align:center;
+  font-size:10px;
+  color:#777;
+  margin-top:9px;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- STATUS -->
+
+<div id="ui">
+
+  <div id="stats">
+
+    HP
+    <div class="bar">
+      <div id="hp" class="fill"></div>
+    </div>
+
+    อาหาร
+    <div class="bar">
+      <div id="food" class="fill"></div>
+    </div>
+
+    EXP
+    <div class="bar">
+      <div id="xp" class="fill"></div>
+    </div>
+
+    Lv.<span id="level">1</span>
+    |
+    <span id="exp">0</span>/<span id="need">100</span>
+    <br>
+
+    ไม้ <span id="wood">0</span>
+    |
+    หิน <span id="stone">0</span>
+    |
+    เนื้อ <span id="meat">0</span>
+
+  </div>
+
+</div>
+
+<button id="inventoryBtn">กระเป๋า</button>
+
+<div id="message"></div>
+
+
+<!-- INVENTORY -->
+
+<div id="inventoryPanel" class="panel">
+
+  <button class="close" onclick="closeInventory()">×</button>
+
+  <h3>กระเป๋า</h3>
+
+  <div id="itemGrid" class="itemGrid"></div>
+
+  <div class="hint">
+    เก็บของและอุปกรณ์ที่มีอยู่
+  </div>
+
+</div>
+
+
+<!-- CRAFT -->
+
+<div id="craftPanel" class="panel">
+
+  <button class="close" onclick="closeCraft()">×</button>
+
+  <h3>คราฟต์</h3>
+
+  <button class="craftBtn" onclick="craft('axe')">
+    ขวาน
+    <span class="craftSmall">
+      ไม้ 5 + หิน 2
+    </span>
+  </button>
+
+  <button class="craftBtn" onclick="craft('sword')">
+    ดาบ
+    <span class="craftSmall">
+      ไม้ 8 + หิน 2
+    </span>
+  </button>
+
+  <button class="craftBtn" onclick="craft('pickaxe')">
+    พลั่วหิน
+    <span class="craftSmall">
+      ไม้ 5 + หิน 6
+    </span>
+  </button>
+
+  <button class="craftBtn" onclick="craft('wall')">
+    กำแพง
+    <span class="craftSmall">
+      ไม้ 6 + หิน 2
+    </span>
+  </button>
+
+  <button class="craftBtn" onclick="craft('floor')">
+    พื้นบ้าน
+    <span class="craftSmall">
+      ไม้ 4
+    </span>
+  </button>
+
+</div>
+
+
+<!-- BUILD -->
+
+<div id="buildPanel">
+
+  <button class="buildBtn"
+          onclick="selectBuild('floor')">
+    พื้น
+  </button>
+
+  <button class="buildBtn"
+          onclick="selectBuild('wall')">
+    กำแพง
+  </button>
+
+  <button class="buildBtn"
+          onclick="cancelBuild()">
+    ยกเลิก
+  </button>
+
+</div>
+
+
+<!-- MOBILE CONTROLS -->
+
+<div id="controls">
+
+  <div class="pad">
+
+    <button class="btn up"
+            data-key="up">
+      ▲
+    </button>
+
+    <button class="btn down"
+            data-key="down">
+      ▼
+    </button>
+
+    <button class="btn left"
+            data-key="left">
+      ◀
+    </button>
+
+    <button class="btn right"
+            data-key="right">
+      ▶
+    </button>
+
+  </div>
+
+
+  <div class="actions">
+
+    <button class="action"
+            id="attack">
+      โจมตี
+    </button>
+
+    <button class="action"
+            id="eat">
+      กิน
+    </button>
+
+    <button class="action"
+            id="craft">
+      คราฟต์
+    </button>
+
+    <button class="action"
+            id="build">
+      บ้าน
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   CANVAS
+========================= */
+
+const canvas =
+  document.getElementById("game");
+
+const ctx =
+  canvas.getContext("2d");
+
+let W = innerWidth;
+let H = innerHeight;
+
+let DPR =
+  Math.min(devicePixelRatio || 1,2);
+
+
+function resize(){
+
+  W = innerWidth;
+  H = innerHeight;
+
+  DPR =
+    Math.min(devicePixelRatio || 1,2);
+
+  canvas.width =
+    W * DPR;
+
+  canvas.height =
+    H * DPR;
+
+  canvas.style.width =
+    W + "px";
+
+  canvas.style.height =
+    H + "px";
+
+  ctx.setTransform(
+    DPR,
+    0,
+    0,
+    DPR,
+    0,
+    0
+  );
+}
+
+
+addEventListener(
+  "resize",
+  resize
+);
+
+resize();
+
+
+/* =========================
+   WORLD
+========================= */
+
+const WORLD_W = 3000;
+const WORLD_H = 3000;
+
+
+const camera = {
+  x:0,
+  y:0
+};
+
+
+/* =========================
+   PLAYER
+========================= */
+
+const player = {
+
+  x:1500,
+  y:1500,
+
+  r:18,
+
+  speed:3.2,
+
+  hp:100,
+  maxHp:100,
+
+  food:100,
+  maxFood:100,
+
+  level:1,
+
+  exp:0,
+
+  attack:18,
+
+  anim:0,
+
+  dir:1,
+
+  moving:false,
+
+  attackTimer:0
+
+};
+
+
+/* =========================
+   INVENTORY
+========================= */
+
+const inventory = {
+
+  wood:0,
+
+  stone:0,
+
+  meat:0,
+
+  axe:0,
+
+  sword:1,
+
+  pickaxe:0,
+
+  wall:0,
+
+  floor:0
+
+};
+
+
+/* =========================
+   CONTROLS
+========================= */
+
+const keys = {
+
+  up:false,
+
+  down:false,
+
+  left:false,
+
+  right:false
+
+};
+
+
+/* =========================
+   OBJECT LISTS
+========================= */
+
+const trees = [];
+
+const stones = [];
+
+const animals = [];
+
+const enemies = [];
+
+const structures = [];
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let messageTimer = 0;
+
+let buildMode = false;
+
+let buildType = "floor";
+
+let dayTime = 0;
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function rand(a,b){
+
+  return Math.random() *
+    (b-a) + a;
+
+}
+
+
+function dist(a,b){
+
+  return Math.hypot(
+    a.x-b.x,
+    a.y-b.y
+  );
+
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+function showMessage(text){
+
+  const box =
+    document.getElementById(
+      "message"
+    );
+
+  box.textContent = text;
+
+  box.style.display =
+    "block";
+
+  messageTimer = 90;
+
+}
+
+
+/* =========================
+   EXP
+========================= */
+
+function expNeed(){
+
+  return player.level * 100;
+
+}
+
+
+function gainExp(amount){
+
+  player.exp += amount;
+
+  while(
+    player.exp >= expNeed()
+  ){
+
+    player.exp -=
+      expNeed();
+
+    player.level++;
+
+    player.maxHp += 10;
+
+    player.hp =
+      player.maxHp;
+
+    player.attack += 4;
+
+    showMessage(
+      "เลเวลอัป Lv." +
+      player.level
+    );
+
+  }
+
+}
+
+
+/* =========================
+   UI
+========================= */
+
+function updateUI(){
+
+  document.getElementById(
+    "hp"
+  ).style.width =
+    Math.max(
+      0,
+      player.hp /
+      player.maxHp * 100
+    ) + "%";
+
+
+  document.getElementById(
+    "food"
+  ).style.width =
+    Math.max(
+      0,
+      player.food /
+      player.maxFood * 100
+    ) + "%";
+
+
+  document.getElementById(
+    "xp"
+  ).style.width =
+    (
+      player.exp /
+      expNeed() *
+      100
+    ) + "%";
+
+
+  document.getElementById(
+    "level"
+  ).textContent =
+    player.level;
+
+
+  document.getElementById(
+    "exp"
+  ).textContent =
+    Math.floor(player.exp);
+
+
+  document.getElementById(
+    "need"
+  ).textContent =
+    expNeed();
+
+
+  document.getElementById(
+    "wood"
+  ).textContent =
+    inventory.wood;
+
+
+  document.getElementById(
+    "stone"
+  ).textContent =
+    inventory.stone;
+
+
+  document.getElementById(
+    "meat"
+  ).textContent =
+    inventory.meat;
+
+}
+
+
+/* =========================
+   GENERATE WORLD
+========================= */
+
+for(
+  let i=0;
+  i<120;
+  i++
+){
+
+  trees.push({
+
+    x:rand(
+      60,
+      WORLD_W-60
+    ),
+
+    y:rand(
+      60,
+      WORLD_H-60
+    ),
+
+    hp:3,
+
+    alive:true
+
+  });
+
+}
+
+
+for(
+  let i=0;
+  i<80;
+  i++
+){
+
+  stones.push({
+
+    x:rand(
+      60,
+      WORLD_W-60
+    ),
+
+    y:rand(
+      60,
+      WORLD_H-60
+    ),
+
+    hp:3,
+
+    alive:true
+
+  });
+
+}
+
+
+const animalTypes = [
+  "deer",
+  "rabbit",
+  "boar"
+];
+
+
+for(
+  let i=0;
+  i<25;
+  i++
+){
+
+  animals.push({
+
+    x:rand(
+      100,
+      WORLD_W-100
+    ),
+
+    y:rand(
+      100,
+      WORLD_H-100
+    ),
+
+    type:
+      animalTypes[
+        Math.floor(
+          Math.random() *
+          animalTypes.length
+        )
+      ],
+
+    hp:30,
+
+    vx:0,
+
+    vy:0,
+
+    timer:0
+
+  });
+
+}
+
+
+for(
+  let i=0;
+  i<12;
+  i++
+){
+
+  enemies.push({
+
+    x:rand(
+      100,
+      WORLD_W-100
+    ),
+
+    y:rand(
+      100,
+      WORLD_H-100
+    ),
+
+    hp:45,
+
+    speed:1.1,
+
+    hitTimer:0
+
+  });
+
+}
+
+
+/* =========================
+   PLAYER UPDATE
+========================= */
+
+function updatePlayer(){
+
+  let dx=0;
+  let dy=0;
+
+
+  if(keys.up)
+    dy--;
+
+  if(keys.down)
+    dy++;
+
+  if(keys.left)
+    dx--;
+
+  if(keys.right)
+    dx++;
+
+
+  player.moving =
+    dx!==0 ||
+    dy!==0;
+
+
+  if(player.moving){
+
+    const len =
+      Math.hypot(dx,dy) || 1;
+
+    dx/=len;
+    dy/=len;
+
+
+    player.x +=
+      dx *
+      player.speed;
+
+    player.y +=
+      dy *
+      player.speed;
+
+
+    player.anim += .25;
+
+
+    if(dx!==0){
+
+      player.dir =
+        dx>0 ? 1 : -1;
+
+    }
+
+  }
+
+
+  player.x =
+    Math.max(
+      player.r,
+      Math.min(
+        WORLD_W-player.r,
+        player.x
+      )
+    );
+
+
+  player.y =
+    Math.max(
+      player.r,
+      Math.min(
+        WORLD_H-player.r,
+        player.y
+      )
+    );
+
+
+  if(player.attackTimer>0)
+    player.attackTimer--;
+
+
+  player.food -= .003;
+
+
+  if(player.food<=0){
+
+    player.food=0;
+
+    player.hp-=.02;
+
+  }
+
+
+  if(player.hp<=0){
+
+    player.hp =
+      player.maxHp;
+
+    player.food=50;
+
+    player.x=1500;
+
+    player.y=1500;
+
+    showMessage(
+      "ตัวละครกลับมาที่จุดเริ่มต้น"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   ANIMALS
+========================= */
+
+function updateAnimals(){
+
+  for(
+    const a of animals
+  ){
+
+    if(a.hp<=0)
+      continue;
+
+
+    const d =
+      dist(a,player);
+
+
+    if(d<170){
+
+      const dx =
+        a.x-player.x;
+
+      const dy =
+        a.y-player.y;
+
+      const len =
+        Math.hypot(
+          dx,
+          dy
+        ) || 1;
+
+
+      a.x +=
+        dx/len*1.4;
+
+      a.y +=
+        dy/len*1.4;
+
+    }
+
+    else{
+
+      if(a.timer<=0){
+
+        const angle =
+          rand(
+            0,
+            Math.PI*2
+          );
+
+
+        a.vx =
+          Math.cos(angle);
+
+        a.vy =
+          Math.sin(angle);
+
+
+        a.timer =
+          Math.floor(
+            rand(30,90)
+          );
+
+      }
+
+
+      a.x +=
+        a.vx*.35;
+
+      a.y +=
+        a.vy*.35;
+
+      a.timer--;
+
+    }
+
+
+    a.x =
+      Math.max(
+        30,
+        Math.min(
+          WORLD_W-30,
+          a.x
+        )
+      );
+
+
+    a.y =
+      Math.max(
+        30,
+        Math.min(
+          WORLD_H-30,
+          a.y
+        )
+      );
+
+  }
+
+}
+
+
+/* =========================
+   ENEMIES
+========================= */
+
+function updateEnemies(){
+
+  for(
+    const e of enemies
+  ){
+
+    if(e.hp<=0)
+      continue;
+
+
+    const d =
+      dist(e,player);
+
+
+    if(d<550){
+
+      const dx =
+        player.x-e.x;
+
+      const dy =
+        player.y-e.y;
+
+      const len =
+        Math.hypot(
+          dx,
+          dy
+        ) || 1;
+
+
+      if(d>42){
+
+        e.x +=
+          dx/len *
+          e.speed;
+
+        e.y +=
+          dy/len *
+          e.speed;
+
+      }
+
+      else if(
+        e.hitTimer<=0
+      ){
+
+        player.hp -= 5;
+
+        e.hitTimer=50;
+
+        showMessage(
+          "ถูกศัตรูโจมตี"
+        );
+
+      }
+
+    }
+
+
+    if(e.hitTimer>0)
+      e.hitTimer--;
+
+  }
+
+}
+
+
+/* =========================
+   RESOURCE COLLECTION
+========================= */
+
+function collectResources(){
+
+  for(
+    const t of trees
+  ){
+
+    if(
+      t.alive &&
+      dist(player,t)<55
+    ){
+
+      t.hp--;
+
+
+      if(t.hp<=0){
+
+        t.alive=false;
+
+        inventory.wood +=
+          Math.floor(
+            rand(3,7)
+          );
+
+        gainExp(12);
+
+        showMessage(
+          "ได้ไม้แล้ว"
+        );
+
+      }
+
+      return;
+
+    }
+
+  }
+
+
+  for(
+    const s of stones
+  ){
+
+    if(
+      s.alive &&
+      dist(player,s)<50
+    ){
+
+      s.hp--;
+
+
+      if(s.hp<=0){
+
+        s.alive=false;
+
+        inventory.stone +=
+          Math.floor(
+            rand(2,5)
+          );
+
+        gainExp(15);
+
+        showMessage(
+          "ได้หินแล้ว"
+        );
+
+      }
+
+      return;
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   ATTACK
+========================= */
+
+function attack(){
+
+  if(buildMode){
+
+    buildStructure();
+
+    return;
+
+  }
+
+
+  if(player.attackTimer>0)
+    return;
+
+
+  player.attackTimer=20;
+
+
+  for(
+    const a of animals
+  ){
+
+    if(
+      a.hp>0 &&
+      dist(player,a)<65
+    ){
+
+      a.hp -=
+        player.attack;
+
+
+      if(a.hp<=0){
+
+        inventory.meat +=
+          Math.floor(
+            rand(1,3)
+          );
+
+        gainExp(25);
+
+        showMessage(
+          "ได้เนื้อแล้ว"
+        );
+
+      }
+
+      return;
+
+    }
+
+  }
+
+
+  for(
+    const e of enemies
+  ){
+
+    if(
+      e.hp>0 &&
+      dist(player,e)<65
+    ){
+
+      e.hp -=
+        player.attack;
+
+
+      if(e.hp<=0){
+
+        gainExp(40);
+
+        showMessage(
+          "กำจัดศัตรูแล้ว"
+        );
+
+      }
+
+      return;
+
+    }
+
+  }
+
+
+  collectResources();
+
+}
+
+
+/* =========================
+   EAT
+========================= */
+
+function eatFood(){
+
+  if(
+    inventory.meat<=0
+  ){
+
+    showMessage(
+      "ไม่มีเนื้อ"
+    );
+
+    return;
+
+  }
+
+
+  inventory.meat--;
+
+
+  player.food =
+    Math.min(
+      player.maxFood,
+      player.food+30
+    );
+
+
+  player.hp =
+    Math.min(
+      player.maxHp,
+      player.hp+10
+    );
+
+
+  showMessage(
+    "กินเนื้อแล้ว"
+  );
+
+}
+
+
+/* =========================
+   CAMERA
+========================= */
+
+function updateCamera(){
+
+  camera.x =
+    player.x-W/2;
+
+  camera.y =
+    player.y-H/2;
+
+
+  camera.x =
+    Math.max(
+      0,
+      Math.min(
+        Math.max(
+          0,
+          WORLD_W-W
+        ),
+        camera.x
+      )
+    );
+
+
+  camera.y =
+    Math.max(
+      0,
+      Math.min(
+        Math.max(
+          0,
+          WORLD_H-H
+        ),
+        camera.y
+      )
+    );
+
+}
+
+
+/* =========================
+   DRAW WORLD
+========================= */
+
+function drawWorld(){
+
+  ctx.fillStyle =
+    "#79c96b";
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+
+  const grid=70;
+
+
+  ctx.strokeStyle =
+    "rgba(255,255,255,.09)";
+
+  ctx.lineWidth=1;
+
+
+  const sx =
+    -camera.x % grid;
+
+  const sy =
+    -camera.y % grid;
+
+
+  for(
+    let x=sx;
+    x<W;
+    x+=grid
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x,
+      0
+    );
+
+    ctx.lineTo(
+      x,
+      H
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  for(
+    let y=sy;
+    y<H;
+    y+=grid
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      0,
+      y
+    );
+
+    ctx.lineTo(
+      W,
+      y
+    );
+
+    ctx.stroke();
+
+  }
+
+}
+
+
+/* =========================
+   WORLD POSITION
+========================= */
+
+function worldPos(o){
+
+  return {
+
+    x:
+      o.x-camera.x,
+
+    y:
+      o.y-camera.y
+
+  };
+
+}
+
+
+/* =========================
+   DRAW TREE
+========================= */
+
+function drawTree(t){
+
+  const p =
+    worldPos(t);
+
+
+  if(
+    p.x<-50 ||
+    p.x>W+50 ||
+    p.y<-60 ||
+    p.y>H+60
+  )
+    return;
+
+
+  ctx.save();
+
+  ctx.translate(
+    p.x,
+    p.y
+  );
+
+
+  ctx.fillStyle =
+    "#8b5a38";
+
+  ctx.fillRect(
+    -5,
+    5,
+    10,
+    25
+  );
+
+
+  ctx.fillStyle =
+    "#2f9b55";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    0,
+    25,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle =
+    "#49b866";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -10,
+    -8,
+    13,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW STONE
+========================= */
+
+function drawStone(s){
+
+  const p =
+    worldPos(s);
+
+
+  if(
+    p.x<-50 ||
+    p.x>W+50 ||
+    p.y<-50 ||
+    p.y>H+50
+  )
+    return;
+
+
+  ctx.save();
+
+  ctx.translate(
+    p.x,
+    p.y
+  );
+
+
+  ctx.fillStyle =
+    "#8b949c";
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    -20,
+    10
+  );
+
+  ctx.lineTo(
+    -13,
+    -12
+  );
+
+  ctx.lineTo(
+    5,
+    -20
+  );
+
+  ctx.lineTo(
+    21,
+    -5
+  );
+
+  ctx.lineTo(
+    14,
+    15
+  );
+
+  ctx.lineTo(
+    -5,
+    20
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+
+  ctx.fillStyle =
+    "#b9c0c5";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -5,
+    -7,
+    5,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW ANIMAL
+========================= */
+
+function drawAnimal(a){
+
+  const p =
+    worldPos(a);
+
+
+  if(
+    p.x<-50 ||
+    p.x>W+50 ||
+    p.y<-50 ||
+    p.y>H+50
+  )
+    return;
+
+
+  ctx.save();
+
+  ctx.translate(
+    p.x,
+    p.y
+  );
+
+
+  let body="#c99a62";
+
+
+  if(
+    a.type==="rabbit"
+  )
+    body="#eee";
+
+
+  if(
+    a.type==="boar"
+  )
+      body="#87634b";
+
+
+  ctx.fillStyle=body;
+
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    3,
+    19,
+    13,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    15,
+    -5,
+    9,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle="#333";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    18,
+    -7,
+    2,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  if(
+    a.type==="rabbit"
+  ){
+
+    ctx.strokeStyle=body;
+
+    ctx.lineWidth=5;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      10,
+      -12
+    );
+
+    ctx.lineTo(
+      8,
+      -28
+    );
+
+    ctx.moveTo(
+      17,
+      -12
+    );
+
+    ctx.lineTo(
+      19,
+      -28
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW ENEMY
+========================= */
+
+function drawEnemy(e){
+
+  const p =
+    worldPos(e);
+
+
+  if(
+    p.x<-50 ||
+    p.x>W+50 ||
+    p.y<-50 ||
+    p.y>H+50
+  )
+    return;
+
+
+  ctx.save();
+
+  ctx.translate(
+    p.x,
+    p.y
+  );
+
+
+  ctx.fillStyle =
+    "#8757c7";
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    0,
+    18,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle="#fff";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -6,
+    -4,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.arc(
+    6,
+    -4,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle="#333";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -6,
+    -4,
+    2,
+    0,
+    Math.PI*2
+  );
+
+  ctx.arc(
+    6,
+    -4,
+    2,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW STRUCTURE
+========================= */
+
+function drawStructure(s){
+
+  const p =
+    worldPos(s);
+
+
+  if(
+    s.type==="floor"
+  ){
+
+    ctx.fillStyle =
+      "rgba(181,128,76,.9)";
+
+
+    ctx.fillRect(
+      p.x-20,
+      p.y-20,
+      40,
+      40
+    );
+
+
+    ctx.strokeStyle =
+      "rgba(100,65,35,.5)";
+
+
+    ctx.strokeRect(
+      p.x-20,
+      p.y-20,
+      40,
+      40
+    );
+
+  }
+
+  else{
+
+    ctx.fillStyle =
+      "#9b6b43";
+
+
+    ctx.fillRect(
+      p.x-20,
+      p.y-25,
+      40,
+      50
+    );
+
+
+    ctx.fillStyle =
+      "#c58b55";
+
+
+    ctx.fillRect(
+      p.x-16,
+      p.y-21,
+      32,
+      42
+    );
+
+  }
+
+}
+
+
+/* =========================
+   DRAW PLAYER
+========================= */
+
+function drawPlayer(){
+
+  const x=W/2;
+  const y=H/2;
+
+
+  ctx.save();
+
+
+  ctx.translate(
+    x,
+    y
+  );
+
+
+  const bob =
+    player.moving
+      ? Math.sin(
+          player.anim
+        )*2
+      : 0;
+
+
+  ctx.translate(
+    0,
+    bob
+  );
+
+
+  ctx.fillStyle =
+    "rgba(0,0,0,.15)";
+
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    20,
+    18,
+    7,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle =
+    "#4c9df5";
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    0,
+    18,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle="#fff";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -6,
+    -4,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.arc(
+    6,
+    -4,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle="#333";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    -6,
+    -4,
+    2,
+    0,
+    Math.PI*2
+  );
+
+  ctx.arc(
+    6,
+    -4,
+    2,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  if(
+    player.attackTimer>10
+  ){
+
+    ctx.strokeStyle="#fff";
+
+    ctx.lineWidth=4;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      player.dir*22,
+      -3,
+      15,
+      -.8,
+      .8
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  ctx.restore();
+
+}
+
+
+/* =========================
+   DRAW
+========================= */
+
+function draw(){
+
+  updateCamera();
+
+  drawWorld();
+
+
+  for(
+    const s of structures
+  )
+    drawStructure(s);
+
+
+  for(
+    const t of trees
+  )
+    if(t.alive)
+      drawTree(t);
+
+
+  for(
+    const s of stones
+  )
+    if(s.alive)
+      drawStone(s);
+
+
+  for(
+    const a of animals
+  )
+    if(a.hp>0)
+      drawAnimal(a);
+
+
+  for(
+    const e of enemies
+  )
+    if(e.hp>0)
+      drawEnemy(e);
+
+
+  drawPlayer();
+
+
+  const phase =
+    (
+      Math.sin(
+        dayTime*.00035
+      )+1
+    )/2;
+
+
+  const night =
+    .48*(1-phase);
+
+
+  if(night>.02){
+
+    ctx.fillStyle =
+      "rgba(35,45,90,"+
+      night+
+      ")";
+
+    ctx.fillRect(
+      0,
+      0,
+      W,
+      H
+    );
+
+  }
+
+
+  if(buildMode){
+
+    ctx.strokeStyle =
+      "rgba(255,255,255,.75)";
+
+    ctx.lineWidth=2;
+
+
+    const gx =
+      Math.round(
+        player.x/42
+      )*42-camera.x;
+
+
+    const gy =
+      Math.round(
+        player.y/42
+      )*42-camera.y;
+
+
+    ctx.strokeRect(
+      gx-20,
+      gy-20,
+      40,
+      40
+    );
+
+  }
+
+}
+
+
+/* =========================
+   CRAFT
+========================= */
+
+function craft(type){
+
+  if(
+    type==="axe" &&
+    inventory.wood>=5 &&
+    inventory.stone>=2
+  ){
+
+    inventory.wood-=5;
+    inventory.stone-=2;
+    inventory.axe++;
+
+    showMessage(
+      "สร้างขวานแล้ว"
+    );
+
+  }
+
+  else if(
+    type==="sword" &&
+    inventory.wood>=8 &&
+    inventory.stone>=2
+  ){
+
+    inventory.wood-=8;
+    inventory.stone-=2;
+
+    inventory.sword++;
+
+    player.attack+=5;
+
+    showMessage(
+      "สร้างดาบแล้ว"
+    );
+
+  }
+
+  else if(
+    type==="pickaxe" &&
+    inventory.wood>=5 &&
+    inventory.stone>=6
+  ){
+
+    inventory.wood-=5;
+    inventory.stone-=6;
+
+    inventory.pickaxe++;
+
+    showMessage(
+      "สร้างพลั่วหินแล้ว"
+    );
+
+  }
+
+  else if(
+    type==="wall" &&
+    inventory.wood>=6 &&
+    inventory.stone>=2
+  ){
+
+    inventory.wood-=6;
+    inventory.stone-=2;
+
+    inventory.wall++;
+
+    showMessage(
+      "สร้างกำแพงแล้ว"
+    );
+
+  }
+
+  else if(
+    type==="floor" &&
+    inventory.wood>=4
+  ){
+
+    inventory.wood-=4;
+
+    inventory.floor++;
+
+    showMessage(
+      "สร้างพื้นบ้านแล้ว"
+    );
+
+  }
+
+  else{
+
+    showMessage(
+      "ไม้หรือหินไม่พอ"
+    );
+
+    return;
+
+  }
+
+
+  updateUI();
+
+  updateInventory();
+
+}
+
+
+/* =========================
+   INVENTORY
+========================= */
+
+function getItemIcon(type){
+
+  const names={
+
+    wood:"ไม้",
+    stone:"หิน",
+    meat:"เนื้อ",
+    axe:"ขวาน",
+    sword:"ดาบ",
+    pickaxe:"พลั่ว",
+    wall:"กำแพง",
+    floor:"พื้น"
+
+  };
+
+
+  return names[type] || "";
+
+}
+
+
+function updateInventory(){
+
+  const grid =
+    document.getElementById(
+      "itemGrid"
+    );
+
+
+  grid.innerHTML="";
+
+
+  const items=[
+
+    ["ไม้","wood"],
+    ["หิน","stone"],
+    ["เนื้อ","meat"],
+    ["ขวาน","axe"],
+    ["ดาบ","sword"],
+    ["พลั่วหิน","pickaxe"],
+    ["กำแพง","wall"],
+    ["พื้นบ้าน","floor"]
+
+  ];
+
+
+  for(
+    const item of items
+  ){
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+
+    box.className="item";
+
+
+    box.innerHTML=
+      "<span class='itemIcon'>"+
+      getItemIcon(item[1])+
+      "</span>"+
+      item[0]+
+      "<div class='itemCount'>"+
+      inventory[item[1]]+
+      "</div>";
+
+
+    grid.appendChild(box);
+
+  }
+
+}
+
+
+function openInventory(){
+
+  updateInventory();
+
+  document.getElementById(
+    "inventoryPanel"
+  ).style.display="block";
+
+}
+
+
+function closeInventory(){
+
+  document.getElementById(
+    "inventoryPanel"
+  ).style.display="none";
+
+}
+
+
+function openCraft(){
+
+  document.getElementById(
+    "craftPanel"
+  ).style.display="block";
+
+}
+
+
+function closeCraft(){
+
+  document.getElementById(
+    "craftPanel"
+  ).style.display="none";
+
+}
+  function openBuild(){
+
+  buildMode=true;
+
+  document.getElementById(
+    "buildPanel"
+  ).style.display="block";
+
+  showMessage(
+    "เลือกชนิดสิ่งก่อสร้าง"
+  );
+
+}
+
+function selectBuild(type){
+
+  buildType=type;
+
+  buildMode=true;
+
+  document.getElementById(
+    "buildPanel"
+  ).style.display="block";
+
+  showMessage(
+    type==="wall"
+      ? "กดโจมตีเพื่อวางกำแพง"
+      : "กดโจมตีเพื่อวางพื้น"
+  );
+
+}
+
+function cancelBuild(){
+
+  buildMode=false;
+
+  document.getElementById(
+    "buildPanel"
+  ).style.display="none";
+
+}
+function selectBuild(type){
+
+  buildType=type;
+
+  buildMode=true;
+
+  document.getElementById(
+    "buildPanel"
+  ).style.display="block";
+
+  showMessage(
+    type==="wall"
+      ? "กดโจมตีเพื่อวางกำแพง"
+      : "กดโจมตีเพื่อวางพื้น"
+  );
+
+}
+
+function cancelBuild(){
+
+  buildMode=false;
+
+  document.getElementById(
+    "buildPanel"
+  ).style.display="none";
+
+}
+function buildStructure(){
+
+  const amount =
+    inventory[buildType];
+
+  if(amount<=0){
+
+    showMessage(
+      buildType==="wall"
+        ? "ไม่มีกำแพง"
+        : "ไม่มีพื้นบ้าน"
+    );
+
+    return;
+
+  }
+
+  const grid=42;
+
+  const bx =
+    Math.round(
+      player.x/grid
+    )*grid;
+
+  const by =
+    Math.round(
+      player.y/grid
+    )*grid;
+
+  if(
+    Math.hypot(
+      bx-player.x,
+      by-player.y
+    )>80
+  ){
+
+    showMessage(
+      "ไกลเกินไป"
+    );
+
+    return;
+
+  }
+
+  for(
+    const s of structures
+  ){
+
+    if(
+      Math.abs(s.x-bx)<10 &&
+      Math.abs(s.y-by)<10
+    ){
+
+      showMessage(
+        "ตรงนี้มีสิ่งก่อสร้างแล้ว"
+      );
+
+      return;
+
+    }
+
+  }
+
+  structures.push({
+    x:bx,
+    y:by,
+    type:buildType
+  });
+
+  inventory[buildType]--;
+
+  showMessage("สร้างแล้ว");
+
+  updateUI();
+  updateInventory();
+
+}
+document.getElementById(
+  "attack"
+).addEventListener(
+  "click",
+  attack
+);
+
+document.getElementById(
+  "eat"
+).addEventListener(
+  "click",
+  eatFood
+);
+
+document.getElementById(
+  "craft"
+).addEventListener(
+  "click",
+  openCraft
+);
+
+document.getElementById(
+  "build"
+).addEventListener(
+  "click",
+  openBuild
+);
+
+document.getElementById(
+  "inventoryBtn"
+).addEventListener(
+  "click",
+  openInventory
+);
+document.querySelectorAll(".btn").forEach(button=>{
+
+  const key =
+    button.dataset.key;
+
+  const start =
+    e=>{
+
+      e.preventDefault();
+
+      keys[key]=true;
+
+    };
+
+  const stop =
+    e=>{
+
+      e.preventDefault();
+
+      keys[key]=false;
+
+    };
+
+  button.addEventListener(
+    "touchstart",
+    start,
+    {passive:false}
+  );
+
+  button.addEventListener(
+    "touchend",
+    stop,
+    {passive:false}
+  );
+
+  button.addEventListener(
+    "touchcancel",
+    stop,
+    {passive:false}
+  );
+
+  button.addEventListener(
+    "mousedown",
+    start
+  );
+
+  button.addEventListener(
+    "mouseup",
+    stop
+  );
+
+  button.addEventListener(
+    "mouseleave",
+    stop
+  );
+
+});
+addEventListener(
+  "keydown",
+  e=>{
+
+    const k =
+      e.key.toLowerCase();
+
+    if(
+      e.key==="ArrowUp" ||
+      k==="w"
+    )
+      keys.up=true;
+
+    if(
+      e.key==="ArrowDown" ||
+      k==="s"
+    )
+      keys.down=true;
+
+    if(
+      e.key==="ArrowLeft" ||
+      k==="a"
+    )
+      keys.left=true;
+
+    if(
+      e.key==="ArrowRight" ||
+      k==="d"
+    )
+      keys.right=true;
+
+    if(e.key===" ")
+      attack();
+
+  }
+);
+
+addEventListener(
+  "keyup",
+  e=>{
+
+    const k =
+      e.key.toLowerCase();
+
+    if(
+      e.key==="ArrowUp" ||
+      k==="w"
+    )
+      keys.up=false;
+
+    if(
+      e.key==="ArrowDown" ||
+      k==="s"
+    )
+      keys.down=false;
+
+    if(
+      e.key==="ArrowLeft" ||
+      k==="a"
+    )
+      keys.left=false;
+
+    if(
+      e.key==="ArrowRight" ||
+      k==="d"
+    )
+      keys.right=false;
+
+  }
+);
+function updateMessage(){
+
+  if(messageTimer>0){
+
+    messageTimer--;
+
+  }
+  else{
+
+    document.getElementById(
+      "message"
+    ).style.display="none";
+
+  }
+
+}
+
+function update(){
+
+  dayTime++;
+
+  updatePlayer();
+
+  updateAnimals();
+
+  updateEnemies();
+
+  updateMessage();
+
+  updateUI();
+
+}
+
+function gameLoop(){
+
+  update();
+
+  draw();
+
+  requestAnimationFrame(
+    gameLoop
+  );
+
+}
+
+updateUI();
+
+updateInventory();
+
+gameLoop();
+</script>
+
+</body>
+</html>
